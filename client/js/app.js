@@ -1,6 +1,6 @@
 var app = angular.module('nibs', ['ionic','ionic.service.core', 'ionic.service.push', 'openfb', 'nibs.config', 'nibs.profile', 'nibs.auth', 'nibs.coupon', 'nibs.product', 'nibs.offer', 'nibs.store-locator', 'nibs.gallery', 'nibs.settings', 'nibs.case', 'nibs.scan', 'nibs.report'])
 
-    .run(function ($window, $location, $rootScope, $state, $ionicPlatform, $ionicPush, $http, OpenFB, FB_APP_ID, SERVER_URL) {
+    .run(function ($window, $location, $rootScope, $state, $ionicPlatform, $ionicPush, $ionicPopup, $http, OpenFB, FB_APP_ID, SERVER_URL) {
 
         var user = JSON.parse($window.localStorage.getItem('user'));
 
@@ -15,21 +15,44 @@ var app = angular.module('nibs', ['ionic','ionic.service.core', 'ionic.service.p
             if(window.StatusBar) {
                 StatusBar.styleDefault();
             }
+
             if(ionic.Platform.isAndroid()) {
               $ionicPush.init({
                 "debug": true,
-                "android.forceShow": true,
+                "android": {"forceShow": "true"},
                 "onNotification": function(notification) {
                   var payload = notification.payload;
                   console.log("notification: " + JSON.stringify(notification));
-                  if(typeof(Storage) !== "undefined") {
-                    var localStorage = $window.localStorage;
-                    if(localStorage.getItem('seqNumber') == null || payload.seqNumber > parseInt(localStorage.getItem('seqNumber'))) {
-                      localStorage.setItem('seqNumber', payload.seqNumber);
-                      console.log("Notif: " + notification.text);
-                    }
+
+                  var localStorage = $window.localStorage;
+                  if(localStorage.getItem('seqNumber') == null || payload.seqNumber > parseInt(localStorage.getItem('seqNumber'))) {
+                    localStorage.setItem('seqNumber', payload.seqNumber);
+                    console.log("Notif: " + notification.text);
+
+                    console.log("foreground: " + notification._raw.additionalData.foreground);
+
+                    if(notification._raw.additionalData.foreground) {
+                      var confirmPopup = $ionicPopup.confirm({
+                       title: notification.title,
+                       template: notification.text
+                     });
+
+                     confirmPopup.then(function(res) {
+                       if(res) {
+                         console.log("changing state due to push");
+                         $state.go('app.offer-detail', {offerId: payload.offerId});
+                       } else {
+                         console.log('Notif ignored');
+                       }
+                     });
+                   } else {
+                     console.log("changing state due to push");
+                     $state.go('app.offer-detail', {offerId: payload.offerId});
+                   }
+
                   }
-                  $state.go('app.offer-detail', {offerId: payload.offerId});
+
+
                 }
               });
 

@@ -41,7 +41,7 @@
                     Recent Activity
                 </ion-item>
 
-                <ion-item nav-clear menu-close ui-sref="app.gallery" class="item-icon-left">
+                <ion-item nav-clear menu-close ui-sref="app.gallery" class="item-icon-left" ng-if="user.typecompte == 'Client'">
                     <i class="icon ion-camera"></i>
                     Gallery
                 </ion-item>
@@ -56,7 +56,7 @@
                     Coupon report
                 </ion-item>
 
-                <ion-item nav-clear menu-close ui-sref="app.store-locator" class="item-icon-left">
+                <ion-item nav-clear menu-close ui-sref="app.store-locator" class="item-icon-left" ng-if="user.typecompte == 'Client'">
                     <i class="icon ion-ios7-location"></i>
                     Store Locator
                 </ion-item>
